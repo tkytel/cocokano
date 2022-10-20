@@ -1,0 +1,97 @@
+'use strict';
+
+let map;
+const pos = [ 35.65867636972139, 139.74541680454988 ];	// Tokyo tower
+
+function initMap()
+{
+	map = L.map('map');
+	map.setView(pos, 15);
+	L.tileLayer(
+		'https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png',
+		{
+			attribution:
+				"<a href='https://maps.gsi.go.jp/development/"
+					+ "ichiran.html' target='_blank'>"
+					+ "地理院タイル</a>",
+			maxZoom: 21,
+			maxNativeZoom: 18,
+		}
+	).addTo(map);
+}
+
+function checkGeolocationApi()
+{
+	if ('geolocation' in navigator === false) {
+		err.style.display = 'grid';
+		err.textContent = 'Geolocation API を利用できません';
+	}
+}
+
+let marker = null;
+let circle = null;
+
+function updateCurrentPosition(p)
+{
+	if (marker === null)
+		marker = L.marker(pos), marker.addTo(map);
+	if (circle === null)
+		circle = L.circle(pos), circle.addTo(map);
+	if (p) {
+		marker.setLatLng([ p.coords.latitude, p.coords.longitude ]);
+		circle.setLatLng([ p.coords.latitude, p.coords.longitude ]);
+	}
+	circle.setRadius(+rnum.value);
+	console.log('update');
+}
+
+initMap();
+checkGeolocationApi();
+
+rnum.addEventListener('input',
+	() => { rran.value = rnum.value; updateCurrentPosition(); });
+rran.addEventListener('input',
+	() => { rnum.value = rran.value; updateCurrentPosition(); });
+
+let watchId = null;
+
+btnStart.addEventListener('click', () => {
+	if (watchId === null) {
+		watchId = navigator.geolocation.watchPosition(
+			updateCurrentPosition,
+			e => {
+				err.style.display = 'grid';
+				err.textContent = 'Error: ' + e.message;
+			},
+			{
+				enableHighAccuracy: true
+			}
+		);
+		btnStart.textContent = 'おわる';
+	} else {
+		watchId = null;
+		navigator.geolocation.clearWatch(watchId);
+		btnStart.textContent = 'はじめる';
+	}
+});
+
+const arr = [];
+
+btnAppend.addEventListener('click', () => {
+	if (circle) {
+		const t = L.circle(circle.getLatLng());
+		t.setRadius(circle.getRadius());
+		t.addTo(map);
+		arr.push({ pos: circle.getLatLng(), r: circle.getRadius() });
+	}
+});
+
+btnJson.addEventListener('click', () => {
+	const blob = new Blob([ JSON.stringify(arr) ],
+		{ type: 'application/json' });
+	const a = document.createElement('a');
+	a.href = URL.createObjectURL(blob);
+	a.download = 'cocokano.json';
+	a.click();
+	a.remove();
+});
