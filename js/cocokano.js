@@ -2,6 +2,7 @@
 
 let map;
 const pos = [ 35.65867636972139, 139.74541680454988 ];	// Tokyo tower
+let watchId = null;
 
 function initMap()
 {
@@ -18,6 +19,17 @@ function initMap()
 			maxNativeZoom: 18,
 		}
 	).addTo(map);
+	map.addEventListener('click', e => {
+		if (watchId === null) {
+			const dum = {
+				coords: {
+					latitude: e.latlng.lat,
+					longitude: e.latlng.lng,
+				}
+			};
+			updateCurrentPosition(dum);
+		}
+	});
 }
 
 function checkGeolocationApi()
@@ -52,8 +64,6 @@ rnum.addEventListener('input',
 	() => { rran.value = rnum.value; updateCurrentPosition(); });
 rran.addEventListener('input',
 	() => { rnum.value = rran.value; updateCurrentPosition(); });
-
-let watchId = null;
 
 btnStart.addEventListener('click', () => {
 	if (watchId === null) {
