@@ -53,7 +53,7 @@ function updateCurrentPosition(p)
 		marker.setLatLng([ p.coords.latitude, p.coords.longitude ]);
 		circle.setLatLng([ p.coords.latitude, p.coords.longitude ]);
 	}
-	circle.setRadius(+rnum.value);
+	circle.setRadius(rnum.value = p.coords.accuracy);
 	console.log('update');
 }
 
