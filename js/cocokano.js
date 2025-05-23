@@ -42,9 +42,11 @@ function checkGeolocationApi()
 
 let marker = null;
 let circle = null;
+let coords;
 
 function updateCurrentPosition(p)
 {
+	coords = p.coords;
 	if (marker === null)
 		marker = L.marker(pos), marker.addTo(map);
 	if (circle === null)
@@ -54,6 +56,7 @@ function updateCurrentPosition(p)
 		circle.setLatLng([ p.coords.latitude, p.coords.longitude ]);
 	}
 	circle.setRadius(rnum.value = p.coords.accuracy);
+	map.setView([ p.coords.latitude, p.coords.longitude ]);
 	console.log('update');
 }
 
@@ -62,8 +65,6 @@ checkGeolocationApi();
 
 rnum.addEventListener('input',
 	() => { rran.value = rnum.value; updateCurrentPosition(); });
-rran.addEventListener('input',
-	() => { rnum.value = rran.value; updateCurrentPosition(); });
 
 btnStart.addEventListener('click', () => {
 	if (watchId === null) {
@@ -85,19 +86,8 @@ btnStart.addEventListener('click', () => {
 	}
 });
 
-const arr = [];
-
-btnAppend.addEventListener('click', () => {
-	if (circle) {
-		const t = L.circle(circle.getLatLng());
-		t.setRadius(circle.getRadius());
-		t.addTo(map);
-		arr.push({ pos: circle.getLatLng(), r: circle.getRadius() });
-	}
-});
-
 btnJson.addEventListener('click', () => {
-	const blob = new Blob([ JSON.stringify(arr) ],
+	const blob = new Blob([ JSON.stringify(coords, null, 4) ],
 		{ type: 'application/json' });
 	const a = document.createElement('a');
 	a.href = URL.createObjectURL(blob);
